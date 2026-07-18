@@ -37,8 +37,9 @@ app.set('trust proxy', 1);
 
 app.use(`${process.env.API_PATH}/auth/start`, require("./routes/auth/start.js"))  
 app.use(`${process.env.API_PATH}/auth/final`, require("./routes/auth/final.js"))
+app.use(`${process.env.API_PATH}/users`, require("./routes/user.ts"))
 
-app.use((err: any, _req: express.Request, res: express.Response) => {
+app.use((err: any, _req: express.Request, res: express.Response, _next: any) => {
     const statusCode = err.statusCode || 500;
     console.error(err.message, err.stack);
     
