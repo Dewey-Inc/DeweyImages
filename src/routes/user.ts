@@ -19,7 +19,7 @@ router.get('/:id', async function(req, res: express.Response) {
     if (!user) {
         return res.status(404).json({ message: "404: Not found"} )
     }
-    return user
+    return res.json(user)
 });
 
 router.get('/:id/images', async function(req, res) {
@@ -27,7 +27,7 @@ router.get('/:id/images', async function(req, res) {
     if (!user) {
         return res.status(404).json({ message: "404: Not found"} )
     }
-    return user.images
+    return res.json(user.images)
 });
 
 router.delete('/:id', async function(req, res) {
