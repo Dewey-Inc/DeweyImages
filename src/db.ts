@@ -20,7 +20,7 @@ database.exec(
         description TEXT DEFAULT "",
         tags TEXT DEFAULT "[]",
 
-        status INT DEFAULT 0,
+        approved INT DEFAULT 0,
         views INT DEFAULT 0
     ) STRICT`
 );
