@@ -21,7 +21,7 @@ database.exec(
         tags TEXT DEFAULT "[]",
 
         status INT DEFAULT 0,
-        views INT DEFAULT 0,
+        views INT DEFAULT 0
     ) STRICT`
 );
 
