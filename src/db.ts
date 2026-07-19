@@ -15,14 +15,21 @@ database.exec(
         resolution TEXT NOT NULL,
         cost INT DEFAULT 0,
         timestamp TEXT DEFAULT current_timestamp,
-        authorid INT NOT NULL,
+        authorid TEXT NOT NULL,
         title TEXT NOT NULL,
         description TEXT DEFAULT "",
         tags TEXT DEFAULT "[]",
 
         status INT DEFAULT 0,
         views INT DEFAULT 0,
-        purchases INT DEFAULT 0
+    ) STRICT`
+);
+
+// purchases
+database.exec(
+    `CREATE TABLE IF NOT EXISTS purchases (
+        userid TEXT NOT NULL,
+        imageid INT NOT NULL
     ) STRICT`
 );
 

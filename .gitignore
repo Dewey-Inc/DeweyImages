@@ -2,3 +2,5 @@ dist
 .env
 data.db
 node_modules
+images/full/*
+images/preview/*

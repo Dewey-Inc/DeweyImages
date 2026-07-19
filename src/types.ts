@@ -1,6 +1,8 @@
 import db from "./db.js";
 import assert from 'node:assert';
 import * as discord from "./discord.js";
+import sharp from "sharp"
+import fs from "fs"
 
 /**
  * A class that represents a user.
@@ -32,8 +34,15 @@ class User {
 
     /** All images the user has submitted. */
     get images() {
-        return db.prepare('SELECT * FROM images WHERE authorid = ?')
-            .all(this.id);
+        let images: Array<Image> = []
+        db.prepare('SELECT id FROM images WHERE authorid = ?')
+            .all(this.id).forEach((imageId) => {
+                assert(typeof imageId === "number")
+                const image = Image.get(imageId)
+                assert(image)
+                images.push(image)
+            })
+        return images
     }
 
     /**
@@ -90,7 +99,8 @@ class Image {
         public authorid: string,
         public title: string,
         public description: string,
-        public tags: Array<string>
+        public tags: Array<string>,
+        public status: boolean
     ) {}
 
     static get(id: number) {
@@ -102,22 +112,24 @@ class Image {
         assert(
             typeof res.resolution === "string" && // ts is both a blessing and a curse istg
             typeof res.cost === "number" &&
-            typeof res.timestamp === "number" &&
+            typeof res.timestamp === "string" &&
             typeof res.authorid === "string" &&
             typeof res.title === "string" &&
             typeof res.description === "string" &&
-            typeof res.tags === "string"
+            typeof res.tags === "string" &&
+            typeof res.status === "number"
         )
 
         return new Image(
             id,
             res.resolution,
             res.cost,
-            res.timestamp,
+            parseInt(res.timestamp),
             res.authorid,
             res.title,
             res.description,
-            JSON.parse(res.tags)
+            JSON.parse(res.tags),
+            !!res.status
         )
     }
 
@@ -130,19 +142,20 @@ class Image {
     /**
      * Modifies the image
      */
-    modify(cost: number, title: string, description: string, tags: Array<string>) {
+    modify({status, cost, title, description, tags} : {status?: boolean, cost?: number, title?: string, description?: string, tags?: Array<string>}) {
+        this.status = status || this.status
         this.cost = cost || this.cost
         this.title = title || this.title
         this.description = description || this.description
         this.tags = tags || this.tags
-        db.prepare('UPDATE images SET (cost, title, description, tags) VALUES (?, ?, ?, ?)  WHERE rowid = ?')
-            .run(this.cost, this.title, this.description, JSON.stringify(this.tags), this.id);
+        db.prepare('UPDATE images SET (status, cost, title, description, tags) VALUES (?, ?, ?, ?)  WHERE rowid = ?')
+            .run(+this.status, this.cost, this.title, this.description, JSON.stringify(this.tags), this.id);
         return
     }
 
     /**
      * Creates an image and returns an image object NOT YET IMPLEMENTED PROPERLY
-     * @param image f
+     * @param path The location of the (temporary) image file
      * @param cost The cost of the image in DeweyCoins
      * @param authorid The Discord id of the Image's author
      * @param title The image's author
@@ -150,11 +163,45 @@ class Image {
      * @param tags A list of tags used to categorize the image
      * @returns The image's unique id
      */
-    static new(image: File, cost: number, authorid: string, title: string, description: string, tags: Array<String>) {
-        const res = db.prepare('INSERT INTO images (resolution, cost, authorid, title, description, tags) VALUES (?, ?, ?, ?, ?)')
-            .run("", cost, authorid, title, description, JSON.stringify(tags));
-        assert(typeof res.lastInsertRowid === "number") // probably fine
-        return Image.get(res.lastInsertRowid);
+    static new(path: string, cost: number, authorid: string, title: string, description: string, tags: Array<String>) {
+        sharp(path)
+            .metadata()
+            .then((metadata) => {
+                const res = db.prepare('INSERT INTO images (resolution, cost, authorid, title, description, tags) VALUES (?, ?, ?, ?, ?, ?)')
+                    .run(`${metadata.width}x${metadata.height}`, cost, authorid, title, description, JSON.stringify(tags));
+
+                assert(typeof res.lastInsertRowid === "number") // probably fine (could be bigint)
+                const image = Image.get(res.lastInsertRowid);
+                assert(image)
+
+                this.saveImage(image, metadata, path)
+                return image
+            })
+    }
+
+    private static saveImage(image: Image, metadata: sharp.Metadata, path: string) {
+        sharp(path)
+            .resize({ fit: "inside", height: Math.min(2160, metadata.height) })
+            .toFile(`images/full/${image.id}.jpeg`)
+
+        sharp("src/assets/tile.svg") // holy nesting (bad) TODO: ignore this
+        .resize({ height: Math.round(metadata.height/1.8) })
+            .toBuffer()
+            .then((overlay) => {
+                sharp("src/assets/dewart.png")
+                    .resize({ height: metadata.height, width: metadata.width, fit: "inside" })
+                    .toBuffer()
+                    .then((dew) => {
+                        sharp(path)
+                            .resize({ fit: "inside", height: Math.min(1080, metadata.height) })
+                            .composite([
+                                { input: overlay, tile: true, gravity: "center" },
+                                { input: dew, gravity: "south" }
+                            ])
+                            .toFile(`images/preview/${image.id}.jpeg`)
+                        fs.unlink(path, () => {})
+                    })
+            })
     }
 }
 

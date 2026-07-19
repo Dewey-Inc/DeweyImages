@@ -43,6 +43,9 @@ router.delete('/:id', async function(req, res) {
     }
 
     user.setPermission(0)
+    user.images.forEach((image) => {
+        image.delete()
+    })
     return res.status(200)
 });
 
