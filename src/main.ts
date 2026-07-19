@@ -48,6 +48,6 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: any) => 
     return;
 });
 
-app.listen(8080, () => {
+app.listen(process.env.PORT, () => {
     console.log(`api started yipee`);
 });
