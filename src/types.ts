@@ -36,9 +36,9 @@ class User {
     get images() {
         let images: Array<Image> = []
         db.prepare('SELECT rowid FROM images WHERE authorid = ?')
-            .all(this.id).forEach((imageId) => {
-                assert(typeof imageId === "number")
-                const image = Image.get(imageId)
+            .all(this.id).forEach(({imageId: rowid}) => {
+                assert(typeof rowid === "number")
+                const image = Image.get(rowid)
                 assert(image)
                 images.push(image)
             })

@@ -3,7 +3,7 @@ import formidable from 'formidable';
 import { Image } from '../types';
 const router = express.Router();
 
-router.post('/submit', async function(req, res, next) {
+router.post('/', async function(req, res, next) {
     const form = formidable.formidable({ maxFiles: 1, maxFileSize: 50*10**6 });
     form.parse(req, (err, fields, files) => {
         if (err) {
@@ -28,7 +28,7 @@ router.post('/submit', async function(req, res, next) {
     });
 })
 
-router.get(':id', async function(req, res) {
+router.get('/:id', async function(req, res) {
     const image = Image.get(parseInt(req.params.id))
     if (!image) {
         return res.status(404).json({ message: '404: Not found' })
@@ -36,7 +36,7 @@ router.get(':id', async function(req, res) {
     return res.json(image)
 })
 
-router.get(':id/preview', async function(req, res) {
+router.get('/:id/preview', async function(req, res) {
     const image = Image.get(parseInt(req.params.id))
     if (!image) {
         return res.status(404).json({ message: '404: Not found' })
@@ -44,15 +44,15 @@ router.get(':id/preview', async function(req, res) {
     return res.sendFile(`images/preview/${image.id}.jpeg`)
 })
 
-router.get(':id/purchase', async function(_req, res) {
+router.get('/:id/purchase', async function(_req, res) {
     return res.status(501).json({ message: "501: Not implemented" })
 })
 
-router.get(':id/download', async function(_req, res) {
+router.get('/:id/download', async function(_req, res) {
     return res.status(501).json({ message: "501: Not implemented" })
 })
 
-router.patch(':id', async function(req, res) {
+router.patch('/:id', async function(req, res) {
     const image = Image.get(parseInt(req.params.id))
     const user = req.session.user
     if (!image) {
@@ -71,7 +71,7 @@ router.patch(':id', async function(req, res) {
     return res.json(image)
 })
 
-router.delete(':id', async function(req, res) {
+router.delete('/:id', async function(req, res) {
     const image = Image.get(parseInt(req.params.id))
     const user = req.session.user
     if (!image) {
@@ -85,7 +85,7 @@ router.delete(':id', async function(req, res) {
     return res.status(200)
 })
 
-router.patch(':id', async function(req, res) {
+router.patch('/:id', async function(req, res) {
     const image = Image.get(parseInt(req.params.id))
     const user = req.session.user
     if (!image) {
