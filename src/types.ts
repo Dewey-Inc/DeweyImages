@@ -184,7 +184,7 @@ class Image {
             .resize({ fit: "inside", height: Math.min(2160, metadata.height) })
             .toFile(`images/full/${image.id}.jpeg`)
 
-        sharp("src/assets/tile.png") // holy nesting (bad) TODO: ignore this
+        sharp("src/assets/tile.svg") // holy nesting (bad) TODO: ignore this
         .resize({ height: Math.round(metadata.height/1.8) })
             .toBuffer()
             .then((overlay) => {

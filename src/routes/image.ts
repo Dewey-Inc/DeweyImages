@@ -100,5 +100,3 @@ router.patch(':id', async function(req, res) {
 })
 
 module.exports = router;
-
-Image.new("/home/bug/Pictures/houseMEOW.jpg", 0, "", "", "", [])
