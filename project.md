@@ -88,7 +88,7 @@ Query string params
 
 
 ### Submitting an image
-**`POST`** `/images/submit`\
+**`POST`** `/images`\
 The user must have permission 1 or higher.\
 Returns an Image object.
 

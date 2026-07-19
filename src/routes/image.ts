@@ -1,6 +1,7 @@
 import express from 'express';
-import formidable from 'formidable';
+import * as formidable from 'formidable';
 import { Image } from '../types';
+import path from 'node:path';
 const router = express.Router();
 
 router.post('/', async function(req, res, next) {
@@ -41,7 +42,7 @@ router.get('/:id/preview', async function(req, res) {
     if (!image) {
         return res.status(404).json({ message: '404: Not found' })
     }
-    return res.sendFile(`images/preview/${image.id}.jpeg`)
+    return res.sendFile(`images/preview/${image.id}.jpeg`, { root: path.join(__dirname, "../..") })
 })
 
 router.get('/:id/purchase', async function(_req, res) {
