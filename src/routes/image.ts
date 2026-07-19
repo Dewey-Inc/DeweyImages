@@ -1,10 +1,10 @@
 import express from 'express';
 import formidable from 'formidable';
-import { Image } from '../types.js';
+import { Image } from '../types';
 const router = express.Router();
 
 router.post('/submit', async function(req, res, next) {
-    const form = formidable.formidable({maxFiles: 0, maxFileSize: 50*10^6});
+    const form = formidable.formidable({ maxFiles: 1, maxFileSize: 50*10**6 });
     form.parse(req, (err, fields, files) => {
         if (err) {
             next(err);
@@ -21,7 +21,7 @@ router.post('/submit', async function(req, res, next) {
         const cost = parseInt(fields.cost[0])
         const title = fields.title[0]
         const description = fields.description ? fields.description[0] || "" : ""
-        const tags = JSON.parse(fields.tags ? fields.tags[0] || "" : "")
+        const tags = JSON.parse(fields.tags ? fields.tags[0] || "[]" : "[]")
 
         const image = Image.new(path, cost, req.session.user.id, title, description, tags)
         return res.status(200).json(image)
@@ -100,3 +100,5 @@ router.patch(':id', async function(req, res) {
 })
 
 module.exports = router;
+
+Image.new("/home/bug/Pictures/houseMEOW.jpg", 0, "", "", "", [])

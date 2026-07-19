@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import express from 'express';
-import { User } from '../../types.js';
+import { User } from '../../types';
 const router = express.Router();
 
 // get the acces token needed to query user info from discord

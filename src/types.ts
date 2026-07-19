@@ -35,7 +35,7 @@ class User {
     /** All images the user has submitted. */
     get images() {
         let images: Array<Image> = []
-        db.prepare('SELECT id FROM images WHERE authorid = ?')
+        db.prepare('SELECT rowid FROM images WHERE authorid = ?')
             .all(this.id).forEach((imageId) => {
                 assert(typeof imageId === "number")
                 const image = Image.get(imageId)
@@ -184,7 +184,7 @@ class Image {
             .resize({ fit: "inside", height: Math.min(2160, metadata.height) })
             .toFile(`images/full/${image.id}.jpeg`)
 
-        sharp("src/assets/tile.svg") // holy nesting (bad) TODO: ignore this
+        sharp("src/assets/tile.png") // holy nesting (bad) TODO: ignore this
         .resize({ height: Math.round(metadata.height/1.8) })
             .toBuffer()
             .then((overlay) => {
@@ -199,7 +199,7 @@ class Image {
                                 { input: dew, gravity: "south" }
                             ])
                             .toFile(`images/preview/${image.id}.jpeg`)
-                        fs.unlink(path, () => {})
+                        //fs.unlink(path, () => {})
                     })
             })
     }

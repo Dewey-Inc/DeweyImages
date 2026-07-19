@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import express from 'express';
-import { User } from '../types.js';
+import { User } from '../types';
 const router = express.Router();
 
 // returns the logged in user if the :id is @me
