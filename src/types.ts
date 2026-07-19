@@ -100,7 +100,7 @@ class Image {
         public title: string,
         public description: string,
         public tags: Array<string>,
-        public status: boolean
+        public approved: boolean
     ) {}
 
     static get(id: number) {
@@ -117,7 +117,7 @@ class Image {
             typeof res.title === "string" &&
             typeof res.description === "string" &&
             typeof res.tags === "string" &&
-            typeof res.status === "number"
+            typeof res.approved === "number"
         )
 
         return new Image(
@@ -129,7 +129,7 @@ class Image {
             res.title,
             res.description,
             JSON.parse(res.tags),
-            !!res.status
+            !!res.approved
         )
     }
 
@@ -142,14 +142,14 @@ class Image {
     /**
      * Modifies the image
      */
-    modify({status, cost, title, description, tags} : {status?: boolean, cost?: number, title?: string, description?: string, tags?: Array<string>}) {
-        this.status = status || this.status
+    modify({approved, cost, title, description, tags} : {approved?: boolean, cost?: number, title?: string, description?: string, tags?: Array<string>}) {
+        this.approved = approved || this.approved
         this.cost = cost || this.cost
         this.title = title || this.title
         this.description = description || this.description
         this.tags = tags || this.tags
         db.prepare('UPDATE images SET (status, cost, title, description, tags) VALUES (?, ?, ?, ?)  WHERE rowid = ?')
-            .run(+this.status, this.cost, this.title, this.description, JSON.stringify(this.tags), this.id);
+            .run(+this.approved, this.cost, this.title, this.description, JSON.stringify(this.tags), this.id);
         return
     }
 
@@ -199,7 +199,7 @@ class Image {
                                 { input: dew, gravity: "south" }
                             ])
                             .toFile(`images/preview/${image.id}.jpeg`)
-                        //fs.unlink(path, () => {})
+                        //fs.unlink(path, () => {}) TODO: fix
                     })
             })
     }

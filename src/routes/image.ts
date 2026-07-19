@@ -96,7 +96,7 @@ router.patch('/:id', async function(req, res) {
         return res.status(401).json({ message: '401: Unauthorized' })
     }
 
-    image.modify({ status: true })
+    image.modify({ approved: true })
     return res.json(image)
 })
 
