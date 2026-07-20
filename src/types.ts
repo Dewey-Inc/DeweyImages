@@ -1,6 +1,6 @@
-import db from "./db.js";
+import db from "./db";
 import assert from 'node:assert';
-import * as discord from "./discord.js";
+import * as discord from "./discord";
 import sharp from "sharp"
 import fs from "fs"
 
@@ -35,6 +35,7 @@ class User {
     /** All images the user has submitted. */
     get images() {
         let images: Array<Image> = []
+        console.log(this.id) // For debugging, remove later if not needed
         db.prepare('SELECT rowid FROM images WHERE authorid = ?')
             .all(this.id).forEach(({ rowid }) => {
                 assert(typeof rowid === "number")
@@ -154,7 +155,7 @@ class Image {
     }
 
     /**
-     * Creates an image and returns an image object NOT YET IMPLEMENTED PROPERLY
+     * Creates an image and returns an image object
      * @param path The location of the (temporary) image file
      * @param cost The cost of the image in DeweyCoins
      * @param authorid The Discord id of the Image's author
@@ -163,45 +164,47 @@ class Image {
      * @param tags A list of tags used to categorize the image
      * @returns The image's unique id
      */
-    static new(path: string, cost: number, authorid: string, title: string, description: string, tags: Array<String>) {
-        sharp(path)
+    static async new(path: string, cost: number, authorid: string, title: string, description: string, tags: Array<String>) {
+        const metadata = await sharp(path)
             .metadata()
-            .then((metadata) => {
-                const res = db.prepare('INSERT INTO images (resolution, cost, authorid, title, description, tags) VALUES (?, ?, ?, ?, ?, ?)')
-                    .run(`${metadata.width}x${metadata.height}`, cost, authorid, title, description, JSON.stringify(tags));
 
-                assert(typeof res.lastInsertRowid === "number") // probably fine (could be bigint)
-                const image = Image.get(res.lastInsertRowid);
-                assert(image)
+        const res = db.prepare('INSERT INTO images (resolution, cost, authorid, title, description, tags) VALUES (?, ?, ?, ?, ?, ?)')
+            .run(`${metadata.width}x${metadata.height}`, cost, authorid, title, description, JSON.stringify(tags));
+        assert(typeof res.lastInsertRowid === "number") // probably fine (could be bigint)
 
-                this.saveImage(image, metadata, path)
-                return image
-            })
+        const image = Image.get(res.lastInsertRowid);
+        assert(image)
+
+        const sucess = await this.saveImage(image, metadata, path)
+        return { image, sucess }
     }
 
-    private static saveImage(image: Image, metadata: sharp.Metadata, path: string) {
-        sharp(path)
-            .resize({ fit: "inside", height: Math.min(2160, metadata.height) })
-            .toFile(`images/full/${image.id}.jpeg`)
+    private static async saveImage(image: Image, metadata: sharp.Metadata, path: string) {
+        try {
+            sharp(path)
+                .resize({ fit: "inside", height: Math.min(2160, metadata.height) })
+                .toFile(`images/full/${image.id}.jpeg`)
 
-        sharp("src/assets/tile.svg") // holy nesting (bad) TODO: ignore this
-        .resize({ height: Math.round(metadata.height/1.8) })
-            .toBuffer()
-            .then((overlay) => {
-                sharp("src/assets/dewart.png")
-                    .resize({ height: metadata.height, width: metadata.width, fit: "inside" })
-                    .toBuffer()
-                    .then((dew) => {
-                        sharp(path)
-                            .resize({ fit: "inside", height: Math.min(1080, metadata.height) })
-                            .composite([
-                                { input: overlay, tile: true, gravity: "center" },
-                                { input: dew, gravity: "south" }
-                            ])
-                            .toFile(`images/preview/${image.id}.jpeg`)
-                        //fs.unlink(path, () => {}) TODO: fix
-                    })
-            })
+            const overlay = await sharp("src/assets/tile.svg")
+                .resize({ height: Math.round(metadata.height/1.8) })
+                .toBuffer()
+
+            const dew = await sharp("src/assets/dewart.png")
+                .resize({ height: metadata.height, width: metadata.width, fit: "inside" })
+                .toBuffer()
+
+            await sharp(path)
+                .resize({ fit: "inside", height: Math.min(1080, metadata.height) })
+                .composite([
+                    { input: overlay, tile: true, gravity: "center" },
+                    { input: dew, gravity: "south" }
+                ])
+                .toFile(`images/preview/${image.id}.jpeg`)
+            fs.unlink(path, () => {})
+            return true
+        } catch(err) {
+            return false
+        }
     }
 }
 

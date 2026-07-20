@@ -22,11 +22,12 @@
 | tags?        | Array  | A list of tags used to categorize the image                |
 
 
-### Purchase object (this isn't exposed to users)
-| Field        | Type   | Description            |
-| ------------ | ------ | ---------------------- |
-| userid       | String | Discord id of the user |
-| imageid      | Int    | The image's unique id  |
+### Purchase object
+| Field   | Type   | Description                          |
+| ------- | ------ | ------------------------------------ |
+| userid  | String | Discord id of the user               |
+| imageid | Int    | The image's unique id                |
+| cost    | Int    | The price of the image in DeweyCoins |
 
 # Permissions
 
@@ -55,7 +56,8 @@ Returns a User object.
 
 ### Getting images posted by a user
 **`GET`** `/users/{User.id}/images`\
-Returns a list of Image object.
+Returns an array of Image object.\
+(Note: this exposes unapproved images to everyone,, should it do that?? idk)
 
 ### KILL user
 **`DELETE`** `/users/{User.id}`\
@@ -63,6 +65,16 @@ Must be a moderator to execute.\
 Sets a user's permission level to -1.
 
 ## Image stuff
+### Getting a list of images
+**`GET`** `/images`\
+Returns a chronologically sorted array of Image objects (newset -> oldest). 
+
+Query string params
+| Field  | Type | Description                                    |
+| ------ | ---- | ---------------------------------------------- |
+| limit? | Int  | The maximum number of images to return         |
+| start? | Int  | The number of images to exclude from the start |
+
 ### Getting information about an image
 **`GET`** `/images/{Image.id}`\
 Returns an Image object.
@@ -121,14 +133,18 @@ JSON params
 **`DELETE`** `/images/{image.id}`\
 The user must be the author of the image or a moderator.
 
+### Getting a list of unapproved images
+**`GET`** `/images/unapproved`\
+The user must be a moderator.\
+Returns an array of Image objects.
+
 ### Approving an image
-**`PATCH`** `/images/{image.id}/approves`\
+**`PATCH`** `/images/{image.id}/approve`\
 The user must be a moderator.\
 Returns an Image object.
 
 # TODO:
 * Add proper support for purchasing and downloading DeweyPremium™ HighScale™ DeweyImages™
-* Submitting images doesn't return anything
 * fix /users/@me/images not working
 * Image search
 * Endpoint to get unapproved images

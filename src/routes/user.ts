@@ -4,7 +4,7 @@ import { User } from '../types';
 const router = express.Router();
 
 // returns the logged in user if the :id is @me
-async function memebigboy(req: express.Request) {
+async function getUser(req: express.Request) {
     if (req.params.id !== "@me") {
         assert(typeof req.params.id == "string")
         return await User.get(req.params.id)
@@ -15,7 +15,7 @@ async function memebigboy(req: express.Request) {
 }
 
 router.get('/:id', async function(req, res: express.Response) {
-    const user = await memebigboy(req)
+    const user = await getUser(req)
     if (!user) {
         return res.status(404).json({ message: "404: Not found"} )
     }
@@ -23,9 +23,9 @@ router.get('/:id', async function(req, res: express.Response) {
 });
 
 router.get('/:id/images', async function(req, res) {
-    const user = await memebigboy(req)
+    const user = await getUser(req)
     if (!user) {
-        return res.status(404).json({ message: "404: Not found"} )
+        return res.status(404).json({ message: "404: Not found" })
     }
     return res.json(user.images)
 });
@@ -35,14 +35,14 @@ router.delete('/:id', async function(req, res) {
         return res.status(401).json({ message: "401: Unauthorized"} )
     }
 
-    const user = await memebigboy(req)
+    const user = await getUser(req)
     if (!user) {
         return res.status(404).json({ message: "404: Not found"} )
     } else if (user.id === req.session.user.id) {
         return res.status(403).json({ message: "403: Wha-,, don't do that???"} )
     }
 
-    user.setPermission(0)
+    user.setPermission(-1)
     user.images.forEach((image) => {
         image.delete()
     })

@@ -14,7 +14,7 @@ database.exec(
     `CREATE TABLE IF NOT EXISTS images (
         resolution TEXT NOT NULL,
         cost INT DEFAULT 0,
-        timestamp TEXT DEFAULT current_timestamp,
+        timestamp TEXT DEFAULT (strftime('%s', 'now')),
         authorid TEXT NOT NULL,
         title TEXT NOT NULL,
         description TEXT DEFAULT "",
@@ -29,7 +29,8 @@ database.exec(
 database.exec(
     `CREATE TABLE IF NOT EXISTS purchases (
         userid TEXT NOT NULL,
-        imageid INT NOT NULL
+        imageid INT NOT NULL,
+        cost INT DEFAULT 0
     ) STRICT`
 );
 
