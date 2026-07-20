@@ -1,10 +1,14 @@
 import express from 'express';
 import * as formidable from 'formidable';
-import { Image } from '../types';
+import { Image, User } from '../types';
 import db from "./../db";
 import path from 'node:path';
 import assert from 'node:assert';
 const router = express.Router();
+
+async function getUser(req: express.Request) {
+    return req.session.userid ? await User.get(req.session.userid) : undefined
+}
 
 router.get('/', function(req, res) {
     const images: Array<Image> = []
@@ -40,7 +44,8 @@ router.post('/', async function(req, res, next) {
         if (err) {
             return next(err);
         }
-        if (!req.session.user || req.session.user.permission < 1) {
+        const user = await getUser(req)
+        if (!user || user.permission < 1) {
             return res.status(401).json({ message: '401: Unauthorized' })
         }
         if (!files.image || !files.image[0] || !fields.cost || !fields.cost[0] || !fields.title || !fields.title[0]) {
@@ -53,7 +58,7 @@ router.post('/', async function(req, res, next) {
         const description = fields.description ? fields.description[0] || "" : ""
         const tags = JSON.parse(fields.tags ? fields.tags[0] || "[]" : "[]")
 
-        const image = await Image.new(path, cost, req.session.user.id, title, description, tags)
+        const image = await Image.new(path, cost, user.id, title, description, tags)
         if (!image.sucess) {
             return res.status(500).json({ message: '500: Failed to save image' })
         }
@@ -85,9 +90,9 @@ router.get('/:id/download', function(_req, res) {
     return res.status(501).json({ message: "501: Not implemented" })
 })
 
-router.patch('/:id', function(req, res) {
+router.patch('/:id', async function(req, res) {
     const image = Image.get(parseInt(req.params.id))
-    const user = req.session.user
+    const user = await getUser(req)
     if (!image) {
         return res.status(404).json({ message: '404: Not found' })
     }
@@ -108,9 +113,9 @@ router.patch('/:id', function(req, res) {
     return res.json(image)
 })
 
-router.delete('/:id', function(req, res) {
+router.delete('/:id', async function(req, res) {
     const image = Image.get(parseInt(req.params.id))
-    const user = req.session.user
+    const user = await getUser(req)
     if (!image) {
         return res.status(404).json({ message: '404: Not found' })
     }
@@ -122,9 +127,9 @@ router.delete('/:id', function(req, res) {
     return res.status(200)
 })
 
-router.patch('/:id/approve', function(req, res) {
+router.patch('/:id/approve', async function(req, res) {
     const image = Image.get(parseInt(req.params.id))
-    const user = req.session.user
+    const user = await getUser(req)
     if (!image) {
         return res.status(404).json({ message: '404: Not found' })
     }

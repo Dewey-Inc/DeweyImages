@@ -45,12 +45,12 @@ router.get('/', async function(req: express.Request, res: express.Response) {
         return res.status(400).json({ message: "400: Invalid authentication request"})
     }
 
-    req.session.user = await User.get(id)
-    if (!req.session.user) {
+    req.session.userid = id
+    if (!await User.get(id)) {
         return res.status(401).json({ message: "401: Couldn't find user on the server"})
     }
 
-    return res.json(req.session.user)
+    return res.json(req.session.userid)
 });
 
 module.exports = router;

@@ -210,7 +210,7 @@ class Image {
 
 declare module 'express-session' {
     interface SessionData {
-        user: User;
+        userid: string;
         state: string;
     }
 }

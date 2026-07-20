@@ -8,10 +8,10 @@ async function getUser(req: express.Request) {
     if (req.params.id !== "@me") {
         assert(typeof req.params.id == "string")
         return await User.get(req.params.id)
-    } else if (!req.session.user) {
+    } else if (!req.session.userid) {
         return undefined
     }
-    return req.session.user
+    return User.get(req.session.userid)
 }
 
 router.get('/:id', async function(req, res: express.Response) {
@@ -31,14 +31,15 @@ router.get('/:id/images', async function(req, res) {
 });
 
 router.delete('/:id', async function(req, res) {
-    if (!req.session.user || req.session.user.permission !== 2 ) {
+    const executioner = req.session.userid ? await User.get(req.session.userid) : undefined
+    if (!executioner || executioner.permission >= 2 ) {
         return res.status(401).json({ message: "401: Unauthorized"} )
     }
 
     const user = await getUser(req)
     if (!user) {
         return res.status(404).json({ message: "404: Not found"} )
-    } else if (user.id === req.session.user.id) {
+    } else if (user.id === executioner.id) {
         return res.status(403).json({ message: "403: Wha-,, don't do that???"} )
     }
 
