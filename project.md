@@ -128,5 +128,7 @@ Returns an Image object.
 
 # TODO:
 * Add proper support for purchasing and downloading DeweyPremium™ HighScale™ DeweyImages™
+* Submitting images doesn't return anything
+* fix /users/@me/images not working
 * Image search
 * Endpoint to get unapproved images
