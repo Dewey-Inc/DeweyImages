@@ -19,6 +19,8 @@ API_PATH=       # * /api
 API_URL=        # * https://api.example.com
 WEB_URL=        # * https://example.com
 PORT=           # * 8080
+
+TESTING=        # set to true for local testing and stuff
 ```
 <sub>Examples marked with `*`, replace them with whatever </sub>
 

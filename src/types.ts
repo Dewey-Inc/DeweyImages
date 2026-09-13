@@ -35,7 +35,6 @@ class User {
     /** All images the user has submitted. */
     get images() {
         let images: Array<Image> = []
-        console.log(this.id) // For debugging, remove later if not needed
         db.prepare('SELECT rowid FROM images WHERE authorid = ?')
             .all(this.id).forEach(({ rowid }) => {
                 assert(typeof rowid === "number")
